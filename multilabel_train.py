@@ -44,7 +44,7 @@ def main(cfg):
     for c in pcfg:
         print(f"{c} : {pcfg[c]} \n")
     # data sequence
-    writer = SummaryWriter(cfg.log_path)
+    writer = SummaryWriter(cfg.log_dir)
     with open(cfg.data_json_dir, "r") as f:
         cfg.data_json = json.load(f)
 
