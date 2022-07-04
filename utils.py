@@ -3,7 +3,7 @@ from torch import nn
 from torch.optim import lr_scheduler
 from monai.utils import set_determinism
 from torch import optim
-from monai.data import CacheDataset, DataLoader, ThreadDataLoader, PersistentDataset
+from monai.data import CacheDataset, DataLoader, ThreadDataLoader, PersistentDataset, Dataset
 from torch.nn.modules.loss import _Loss
 from monai.utils import LossReduction
 from monai.losses import DiceLoss
@@ -68,13 +68,20 @@ def get_val_dataloader(val_dataset, cfg):
     return val_dataloader
 
 def get_train_dataset(cfg):
-    train_ds = CacheDataset(
+    train_ds = Dataset(
         data=cfg.data_json["train"],
         transform=cfg.train_transforms,
-        cache_rate=cfg.train_cache_rate,
-        num_workers=cfg.num_workers,
-        copy_cache=False,
+        # cache_rate=cfg.train_cache_rate,
+        # num_workers=cfg.num_workers,
+        # copy_cache=False,
     )
+    # train_ds = Dataset(
+    #     data=cfg.data_json["train"],
+    #     transform=cfg.train_transforms,
+    #     # cache_rate=cfg.train_cache_rate,
+    #     # num_workers=cfg.num_workers,
+    #     # copy_cache=False,
+    # )
     # train_ds = PersistentDataset(
     #     data=cfg.data_json["train"],
     #     transform=cfg.train_transforms,
@@ -83,12 +90,12 @@ def get_train_dataset(cfg):
     return train_ds
 
 def get_val_dataset(cfg):
-    val_ds = CacheDataset(
+    val_ds = Dataset(
         data=cfg.data_json["val"],
         transform=cfg.val_transforms,
-        cache_rate=cfg.val_cache_rate,
-        num_workers=cfg.num_workers,
-        copy_cache=False,
+        # cache_rate=cfg.val_cache_rate,
+        # num_workers=cfg.num_workers,
+        # copy_cache=False,
     )
     return val_ds
 

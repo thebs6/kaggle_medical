@@ -40,21 +40,21 @@ cfg = basic_cfg
 
 # train
 cfg.train = True
-cfg.eval = True
-cfg.eval_epochs = 2
+cfg.eval = False
+cfg.eval_epochs = 10
 cfg.start_eval_epoch = 200  # when use large lr, can set a large num
 cfg.run_org_eval = False
 cfg.run_tta_val = False
 cfg.load_best_weights = False
-cfg.amp = False
-cfg.val_amp = False
+cfg.amp = True
+cfg.val_amp = True
 # lr
 # warmup_restart, cosine
 cfg.lr_mode = "warmup_restart"
 cfg.lr = 1e-4
 cfg.min_lr = 1e-6
 cfg.weight_decay = 1e-6
-cfg.epochs = 2000
+cfg.epochs = 1000
 cfg.restart_epoch = 100  # only for warmup_restart
 
 cfg.finetune_lb = -1
@@ -62,15 +62,15 @@ cfg.finetune_lb = -1
 # dataset
 cfg.img_size = (160, 160, 80)
 cfg.spacing = (1.5, 1.5, 1.5)
-cfg.batch_size = 4
+cfg.batch_size = 1
 cfg.val_batch_size = 1
-cfg.train_cache_rate = 0.0
+cfg.train_cache_rate = 0.5
 cfg.val_cache_rate = 1.0
-cfg.gpu_cache = False
-cfg.val_gpu_cache = False
+cfg.gpu_cache = True
+cfg.val_gpu_cache = True
 
 # val
-cfg.roi_size = (224, 224, 80)
+cfg.roi_size = (256, 256, 64)
 cfg.sw_batch_size = 4
 
 # model

@@ -1,17 +1,24 @@
 import os
 from types import SimpleNamespace
+import platform
+
 
 
 cfg = SimpleNamespace(**{})
-
-# data path
-cfg.data_dir = r"D:\Study\ml\kaggle\data\results/"
 cfg.fold = 0
+
+if platform.system().lower() == 'windows':
+    cfg.data_dir = r"D:\Study\ml\kaggle\archive\3d_training_pipeline\data\results\train/"
+    cfg.data_json_dir = cfg.data_dir + f"dataset_3d_fold_{cfg.fold}.json"
+elif platform.system().lower() == 'linux':
+    cfg.data_dir = "./data/results/train/"
+    cfg.data_json_dir = cfg.data_dir + f"Ldataset_3d_fold_{cfg.fold}.json"
+
 
 cfg.test_df = cfg.data_dir + "sample_submission.csv"
 cfg.output_dir = "./output/weights/"
+cfg.log_dir = "./logdir"
 
-# dataset
 cfg.batch_size = 32
 cfg.val_batch_size = 64
 cfg.img_size = (96, 96, 64)
@@ -28,11 +35,11 @@ cfg.eval_epochs = 1
 cfg.start_cal_metric_epoch = 1
 cfg.warmup = 1
 
-# ressources
+# resources
 cfg.mixed_precision = True
 cfg.gpu = 0
 cfg.device = "cuda:%d" % cfg.gpu
-cfg.num_workers = 8
+cfg.num_workers = 0
 cfg.weights = None
 
 basic_cfg = cfg

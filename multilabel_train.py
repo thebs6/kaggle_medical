@@ -5,6 +5,7 @@ import os
 import sys
 import shutil
 
+import monai.networks.nets
 import numpy as np
 import pandas as pd
 import torch
@@ -13,6 +14,7 @@ from monai.handlers.utils import from_engine
 from monai.inferers import sliding_window_inference
 from monai.data import decollate_batch
 from torch.cuda.amp import GradScaler, autocast
+from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from utils import *
@@ -38,10 +40,11 @@ from monai.metrics import DiceMetric
 
 
 def main(cfg):
-
+    pcfg = vars(cfg)
+    for c in pcfg:
+        print(f"{c} : {pcfg[c]} \n")
     # data sequence
-    cfg.data_json_dir = cfg.data_dir + f"dataset_3d_fold_{cfg.fold}.json"
-
+    writer = SummaryWriter(cfg.log_path)
     with open(cfg.data_json_dir, "r") as f:
         cfg.data_json = json.load(f)
 
@@ -60,6 +63,15 @@ def main(cfg):
         val_dataloader = get_val_dataloader(val_dataset, cfg)
 
     print(f"run fold {cfg.fold}, train len: {len(train_dataset)}")
+
+    # model = monai.networks.nets.SwinUNETR(
+    #     img_size=(256, 256, 64),
+    #     in_channels=1,
+    #     out_channels=3,
+    #     feature_size=48,
+    #     drop_rate=0.0,
+    #     attn_drop_rate=0.0,
+    # ).to(cfg.device)
 
     model = UNet(
         spatial_dims=3,
@@ -135,6 +147,7 @@ def main(cfg):
                 metric_function=metric_function,
                 seg_loss_func=seg_loss_func,
                 cfg=cfg,
+                writer=writer,
                 epoch=0,
             )
     else:
@@ -151,7 +164,7 @@ def main(cfg):
                 scheduler=scheduler,
                 seg_loss_func=seg_loss_func,
                 cfg=cfg,
-                # writer=writer,
+                writer=writer,
                 epoch=epoch,
                 step=step,
                 iteration=i,
@@ -215,7 +228,7 @@ def run_train(
     scheduler,
     seg_loss_func,
     cfg,
-    # writer,
+    writer,
     epoch,
     step,
     iteration,
@@ -261,10 +274,11 @@ def run_train(
         losses = running_loss / dataset_size
         progress_bar.set_description(f"loss: {losses:.4f} lr: {optimizer.param_groups[0]['lr']:.6f}")
         del batch, inputs, masks, outputs, loss
+    writer.add_scalars("accuracy", {"train_loss": losses}, epoch)
     print(f"Train loss: {losses:.4f}")
     torch.cuda.empty_cache()
 
-def run_eval(model, val_dataloader, post_pred, metric_function, seg_loss_func, cfg, epoch):
+def run_eval(model, val_dataloader, post_pred, metric_function, seg_loss_func, cfg,writer, epoch):
 
     model.eval()
 
@@ -311,6 +325,7 @@ def run_eval(model, val_dataloader, post_pred, metric_function, seg_loss_func, c
     hausdorff_metric.reset()
 
     all_score = dice_score * 0.4 + hausdorff_score * 0.6
+    writer.add_scalar("valid", {"dice_score": dice_score, "hausdorff_score": hausdorff_score, "all_score": all_score}, epoch)
     print(f"dice_score: {dice_score} hausdorff_score: {hausdorff_score} all_score: {all_score}")
     torch.cuda.empty_cache()
 
